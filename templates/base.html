@@ -1,0 +1,6 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Taskboard{% endblock %}</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<body><div class="shell"><header><a class="brand" href="/">◈ Taskboard</a><span class="tag">A little structure. More progress.</span>
+{% if session.user_id %}<form method="post" action="/logout"><input type="hidden" name="csrf" value="{{ session.csrf }}"><button class="quiet">Sign out</button></form>{% endif %}</header>
+<main>{% block content %}{% endblock %}</main><footer>Built by Mohammed Suhail Hussain · Cloud Task Manager</footer></div></body></html>

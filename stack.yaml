@@ -1,0 +1,39 @@
+# Single-node Swarm learning deployment; publish an image to a registry for multiple nodes.
+services:
+  web:
+    image: cloud-task-manager:local
+    ports:
+      - "8081:5000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY:?Export SECRET_KEY before deploying}
+      MONGO_URI: mongodb://mongo:27017/taskmanager
+      COOKIE_SECURE: "false"
+    deploy:
+      replicas: 3
+      placement:
+        constraints: ["node.role == manager"]
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+        failure_action: rollback
+        monitor: 30s
+      rollback_config:
+        parallelism: 1
+        order: stop-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      resources:
+        limits:
+          memory: 256M
+  mongo:
+    image: mongo:7.0
+    volumes: ["mongo-data:/data/db"]
+    deploy:
+      placement:
+        constraints: ["node.role == manager"]
+      restart_policy:
+        condition: on-failure
+volumes:
+  mongo-data:

@@ -1,0 +1,26 @@
+services:
+  web:
+    build: .
+    image: cloud-task-manager:local
+    ports:
+      - "127.0.0.1:8081:5000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY:?Generate SECRET_KEY in .env first}
+      MONGO_URI: mongodb://mongo:27017/taskmanager
+      COOKIE_SECURE: "false"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: unless-stopped
+  mongo:
+    image: mongo:7.0
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+volumes:
+  mongo-data:

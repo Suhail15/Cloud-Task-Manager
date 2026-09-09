@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% block content %}<section class="auth card"><p class="eyebrow">YOUR PERSONAL WORKSPACE</p><h1>{{ 'Make room for progress.' if registering else 'Welcome back.' }}</h1><p class="muted">{{ 'Create an account to organise your next steps.' if registering else 'Sign in to pick up where you left off.' }}</p>
+{% if error %}<p role="alert" class="error">{{ error }}</p>{% endif %}
+<form method="post"><input type="hidden" name="csrf" value="{{ session.csrf }}">
+<label for="username">Username</label><input id="username" name="username" required minlength="3" maxlength="32" pattern="[A-Za-z0-9_]+" autocomplete="username">
+<label for="password">Password{% if registering %} <span class="muted">(12–128 characters)</span>{% endif %}</label><input id="password" name="password" type="password" required maxlength="128" {% if registering %}minlength="12" autocomplete="new-password"{% else %}autocomplete="current-password"{% endif %}>
+<button>{{ 'Create account' if registering else 'Sign in' }}</button></form>
+<p>{{ 'Already have an account?' if registering else 'New here?' }} <a href="{{ '/login' if registering else '/register' }}">{{ 'Sign in' if registering else 'Create an account' }}</a></p></section>{% endblock %}

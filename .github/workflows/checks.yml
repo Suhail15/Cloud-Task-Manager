@@ -1,0 +1,42 @@
+name: Application checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:7.0
+        ports: ["27017:27017"]
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand(\"ping\").ok'"
+          --health-interval 10s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: python -m pytest -q
+      - name: Test against real MongoDB
+        run: python -m pytest -q
+        env:
+          TEST_MONGO_URI: mongodb://localhost:27017
+      - run: docker build -t cloud-task-manager:ci .
+      - name: Verify Compose configuration
+        run: docker compose config --quiet
+        env:
+          SECRET_KEY: ci-only-secret-not-used-for-deployment-123456
+      - name: Start disposable deployment and exercise HTTP flow
+        run: |
+          docker compose up --build -d --wait
+          python tests/smoke_http.py
+        env:
+          SECRET_KEY: ci-only-secret-not-used-for-deployment-123456
+      - name: Stop disposable deployment
+        if: always()
+        run: docker compose down
+        env:
+          SECRET_KEY: ci-only-secret-not-used-for-deployment-123456
